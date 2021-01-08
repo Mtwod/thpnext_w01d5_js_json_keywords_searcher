@@ -71,19 +71,25 @@ const addNewKeyword = (label, keyword) => {
     resetKeywordsUl();
 };
 
+const displayArticles = (articles) => {
+  articles.forEach((article) => {
+    document.querySelector('.articlesList').innerHTML += `
+        <article>
+            <h2>${article.titre}</h2>
+        </article>
+    `;
+  });
+};
+
 // We reload the articles depends of the currentKeywords
-// TODO: Modify this function to display only articles that contain at least one of the selected keywords.
+// TODO:OKTODO: Modify this function to display only articles that contain at least one of the selected keywords.
 const reloadArticles = () => {
     document.querySelector('.articlesList').innerHTML = '';
     
-    const articlesToShow = data.articles;
-    articlesToShow.forEach((article) => {
-        document.querySelector('.articlesList').innerHTML += `
-            <article>
-                <h2>${article.titre}</h2>
-            </article>
-        `;
-    });
+    const articlesToShow = data.articles.filter((article) => article.tags.some((tag) => currentKeywords.includes(tag)));
+    if (articlesToShow.length == 0) displayArticles(data.articles);
+    if (articlesToShow.length > 0) displayArticles(articlesToShow);
+    
 };
 
 // We empty the content from the <ul> under the text input
@@ -106,9 +112,9 @@ const resetInput = () => {
 };
 
 // Clean a keyword to lowercase and without special characters
-// TODO: Make the cleaning
+// TODO:TODO: Make the cleaning
 const cleanedKeyword = (keyword) => {
-    const cleanedKeyword = keyword;
+    const cleanedKeyword = keyword.replace(/[^\w\s]/gi, '').toLowerCase();
 
     return cleanedKeyword;
 };
@@ -126,11 +132,22 @@ const showKeywordsList = (value) => {
         
         // This will allow you to add a new element in the list under the text input
         // On click, we add the keyword, like so:
-        // keyWordUl.innerHTML += `
-        //    <li onclick="addNewKeyword(`${keyword}`, `${cleanedKeyword(keyword)}`)">${keyword}</li>
-        // `;
+        const categoryToShow = keywordsCategories.filter((category) => category.keywords.some((keyword) => cleanedKeyword(keyword).includes(cleanedKeyword(value))));
+        if (categoryToShow.length === 0) {
+          resetKeywordsUl();
+          return;
+        }
+        // Max : In case there is more than one category, we show them all
+        categoryToShow.forEach((category) => {
+          category.keywords.forEach((keyword) => {
+          keyWordUl.innerHTML += `
+           <li onclick="addNewKeyword(\`${keyword}\`, \`${cleanedKeyword(keyword)}\`)">${keyword}</li>`;
+          });
+        });
+        return;
     }
-};
+    resetKeywordsUl();
+  };
 
 // Once the DOM (you will se what is it next week) is loaded, we get back our form and
 // we prevent the initial behavior of the navigator: reload the page when it's submitted.
